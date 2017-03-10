@@ -390,7 +390,7 @@ public class SelectableTextHelper {
                     ViewGroup.LayoutParams.WRAP_CONTENT, false);
             mWindow.setClippingEnabled(false);
 
-            contentView.setOnClickListener(new View.OnClickListener() {
+            contentView.findViewById(R.id.tv_copy).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // 获取剪贴板管理器
@@ -405,7 +405,7 @@ public class SelectableTextHelper {
                     SelectableTextHelper.this.hideSelectView();
                 }
             });
-            contentView.setOnClickListener(new View.OnClickListener() {
+            contentView.findViewById(R.id.tv_select_all).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     hideSelectView();
