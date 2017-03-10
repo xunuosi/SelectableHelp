@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import cn.nuosi.andoroid.testdrawline.SelectableTextView.OnSelectListener;
 import cn.nuosi.andoroid.testdrawline.SelectableTextView.SelectableTextHelper;
 
 public class MainActivity extends AppCompatActivity {
@@ -69,12 +70,23 @@ public class MainActivity extends AppCompatActivity {
 
 //        setActionMode();
         setListener();
+
         mTextView2 = (TextView) findViewById(R.id.test_tv2);
+
         mSelectableTextHelper = new SelectableTextHelper.Builder(mTextView2)
                 .setSelectedColor(ContextCompat.getColor(MainActivity.this, R.color.selected_blue))
                 .setCursorHandleSizeInDp(20)
+                .setPopMenu(R.layout.layout_pop_menu)
                 .setCursorHandleColor(ContextCompat.getColor(MainActivity.this, R.color.cursor_handle_color))
                 .build();
+
+        mSelectableTextHelper.setSelectListener(new OnSelectListener() {
+            @Override
+            public void onTextSelected(CharSequence content) {
+
+            }
+        });
+
     }
 
 

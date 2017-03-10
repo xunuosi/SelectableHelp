@@ -10,7 +10,6 @@ import android.support.annotation.ColorInt;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -35,6 +34,10 @@ public class SelectableTextHelper {
 
     private Context mContext;
     private TextView mTextView;
+    /**
+     * 自定义菜单的布局ID
+     */
+    private int menuId;
     /**
      * 可变文本的接口非常强大
      */
@@ -83,6 +86,7 @@ public class SelectableTextHelper {
         mSelectedColor = builder.mSelectedColor;
         mCursorHandleColor = builder.mCursorHandleColor;
         mCursorHandleSize = TextLayoutUtil.dp2px(mContext, builder.mCursorHandleSizeInDp);
+        menuId = builder.menuId;
         init();
     }
 
@@ -160,7 +164,7 @@ public class SelectableTextHelper {
         };
         mTextView.getViewTreeObserver().addOnScrollChangedListener(mOnScrollChangedListener);
 
-        mOperateWindow = new OperateWindow(mContext);
+        mOperateWindow = new OperateWindow(mContext, menuId);
     }
 
     /**
@@ -332,6 +336,7 @@ public class SelectableTextHelper {
         private int mCursorHandleColor = 0xFF1379D6;
         private int mSelectedColor = 0xFFAFE1F4;
         private float mCursorHandleSizeInDp = 24;
+        private int menuId;
 
         public Builder(TextView textView) {
             mTextView = textView;
@@ -352,6 +357,11 @@ public class SelectableTextHelper {
             return this;
         }
 
+        public Builder setPopMenu(int layoutId) {
+            menuId = layoutId;
+            return this;
+        }
+
         public SelectableTextHelper build() {
             return new SelectableTextHelper(this);
         }
@@ -367,9 +377,9 @@ public class SelectableTextHelper {
         private int mWidth;
         private int mHeight;
 
-        public OperateWindow(final Context context) {
+        public OperateWindow(final Context context, final int menuId) {
             // 解析弹出的菜单
-            View contentView = LayoutInflater.from(context).inflate(R.layout.layout_pop_menu, null);
+            View contentView = LayoutInflater.from(context).inflate(menuId, null);
             contentView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
                     View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
             mWidth = contentView.getMeasuredWidth();
