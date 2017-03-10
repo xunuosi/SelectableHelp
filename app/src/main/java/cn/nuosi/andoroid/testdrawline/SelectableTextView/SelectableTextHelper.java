@@ -11,6 +11,8 @@ import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
+import android.text.style.LineBackgroundSpan;
+import android.text.style.UnderlineSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -46,10 +48,11 @@ public class SelectableTextHelper {
      * 改变文本背景色
      */
     private BackgroundColorSpan mBgSpan;
+    private UnderlineSpan mUnderlineSpan;
 
     private int mTouchX;
     private int mTouchY;
-    private int[] mLocation  = new int[2];
+    private int[] mLocation = new int[2];
 
     private int mSelectedColor;
     private int mCursorHandleColor;
@@ -169,6 +172,7 @@ public class SelectableTextHelper {
 
     /**
      * 延迟显示的方法
+     *
      * @param duration
      */
     private void postShowSelectView(int duration) {
@@ -229,6 +233,7 @@ public class SelectableTextHelper {
 
     /**
      * 显示选中文本时的效果
+     *
      * @param x
      * @param y
      */
@@ -251,7 +256,7 @@ public class SelectableTextHelper {
         if (mSpannable == null || startOffset >= mTextView.getText().length()) {
             return;
         }
-        selectext(startOffset, endOffset);
+        selectText(startOffset, endOffset);
         showCursorHandle(mStartHandle);
         showCursorHandle(mEndHandle);
         mOperateWindow.show();
@@ -259,10 +264,11 @@ public class SelectableTextHelper {
 
     /**
      * 选中文本的方法
+     *
      * @param startPos
      * @param endPos
      */
-    private void selectext(int startPos, int endPos) {
+    private void selectText(int startPos, int endPos) {
         if (startPos != -1) {
             mSelectionInfo.setStart(startPos);
         }
@@ -281,11 +287,11 @@ public class SelectableTextHelper {
             }
             // 截取选中状态的文本
             mSelectionInfo.setSelectionContent(
-                            mSpannable.subSequence(
-                                    mSelectionInfo.getStart(),
-                                    mSelectionInfo.getEnd()).toString());
+                    mSpannable.subSequence(
+                            mSelectionInfo.getStart(),
+                            mSelectionInfo.getEnd()).toString());
             mSpannable.setSpan(mBgSpan,
-                    mSelectionInfo.getStart(),mSelectionInfo.getEnd(),
+                    mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
                     Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
             // 设置监听选中接口回调时选择到的文字
             if (mSelectListener != null) {
@@ -295,7 +301,22 @@ public class SelectableTextHelper {
     }
 
     /**
+     * 实现画线的方法
+     */
+    private void showUnderLine() {
+        if (mSpannable != null) {
+            mUnderlineSpan = new UnderlineSpan();
+            mSpannable.setSpan(mUnderlineSpan,
+                    mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
+                    Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+
+            mTextView.setText(mSpannable);
+        }
+    }
+
+    /**
      * 显示游标的方法
+     *
      * @param cursorHandle
      */
     private void showCursorHandle(CursorHandle cursorHandle) {
@@ -307,6 +328,7 @@ public class SelectableTextHelper {
 
     /**
      * 设置外部调用的监听接口
+     *
      * @param selectListener
      */
     public void setSelectListener(OnSelectListener selectListener) {
@@ -409,15 +431,23 @@ public class SelectableTextHelper {
                 @Override
                 public void onClick(View v) {
                     hideSelectView();
-                    selectext(0, mTextView.getText().length());
+                    selectText(0, mTextView.getText().length());
                     isHide = false;
                     showCursorHandle(mStartHandle);
                     showCursorHandle(mEndHandle);
                     mOperateWindow.show();
                 }
             });
+            // 设置下划线
+            contentView.findViewById(R.id.tv_drawLine).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    hideSelectView();
+                    resetSelectionInfo();
+                    showUnderLine();
+                }
+            });
         }
-
 
 
         /**
@@ -510,7 +540,7 @@ public class SelectableTextHelper {
         @Override
         public boolean onTouchEvent(MotionEvent event) {
 
-            switch (event.getAction()   ) {
+            switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     mBeforeDragStart = mSelectionInfo.getStart();
                     mBeforeDragEnd = mSelectionInfo.getEnd();
@@ -536,6 +566,7 @@ public class SelectableTextHelper {
 
         /**
          * 随着触摸移动不断更新选中状态
+         *
          * @param x
          * @param y
          */
@@ -564,23 +595,23 @@ public class SelectableTextHelper {
                         // 改变右侧游标的方向
                         cursorHandle.changeDirection();
                         mBeforeDragStart = mBeforeDragEnd;
-                        selectext(mBeforeDragEnd, offset);
+                        selectText(mBeforeDragEnd, offset);
                         cursorHandle.updateCursorHandle();
                     } else {
-                        selectext(offset, -1);
+                        selectText(offset, -1);
                     }
                     updateCursorHandle();
-                } else  {
+                } else {
                     // 处理右边超过左边游标的情况
                     if (offset < mBeforeDragStart) {
                         CursorHandle cursorHandle = getCursorHandle(true);
                         cursorHandle.changeDirection();
                         changeDirection();
                         mBeforeDragEnd = mBeforeDragStart;
-                        selectext(offset,mBeforeDragStart);
+                        selectText(offset, mBeforeDragStart);
                         cursorHandle.updateCursorHandle();
                     } else {
-                        selectext(mBeforeDragStart, offset);
+                        selectText(mBeforeDragStart, offset);
                     }
                     updateCursorHandle();
                 }
@@ -604,6 +635,7 @@ public class SelectableTextHelper {
 
         /**
          * 显示游标时调用的方法
+         *
          * @param x
          * @param y
          */
@@ -631,6 +663,7 @@ public class SelectableTextHelper {
 
         /**
          * 返回游标类型
+         *
          * @param isLeft
          * @return
          */
