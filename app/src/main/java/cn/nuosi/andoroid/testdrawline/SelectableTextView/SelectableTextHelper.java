@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.v4.graphics.ColorUtils;
@@ -13,9 +14,12 @@ import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
 import android.text.style.BackgroundColorSpan;
+import android.text.style.ClickableSpan;
 import android.text.style.LineBackgroundSpan;
 import android.text.style.UnderlineSpan;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -24,6 +28,9 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.lang.ref.WeakReference;
 
 import cn.nuosi.andoroid.testdrawline.R;
 
@@ -34,7 +41,7 @@ import cn.nuosi.andoroid.testdrawline.R;
 
 public class SelectableTextHelper {
 
-    private final static int DEFAULT_SELECTION_LENGTH = 1;
+    private static int DEFAULT_SELECTION_LENGTH = 1;
     private static final int DEFAULT_SHOW_DURATION = 100;
 
     private Context mContext;
@@ -54,9 +61,7 @@ public class SelectableTextHelper {
     /**
      * 下划线
      */
-    private UnderlineSpan mUnderlineSpan;
     private int mUnderlineColor = Color.RED;
-    private Paint mUnderlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private int mTouchX;
     private int mTouchY;
@@ -106,8 +111,6 @@ public class SelectableTextHelper {
         // 是 SPANNABLE 时才可以设置 Span ，实现选中的效果；
         mTextView.setText(mTextView.getText(), TextView.BufferType.SPANNABLE);
 
-        mUnderlinePaint.setColor(mUnderlineColor);
-
         mTextView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -128,8 +131,11 @@ public class SelectableTextHelper {
         mTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                resetSelectionInfo();
-                hideSelectView();
+                // 当TextView有可点击部分时将屏蔽TextView的单击事件
+                if (mTextView.getSelectionStart() == -1 && mTextView.getSelectionEnd() == -1) {
+                    resetSelectionInfo();
+                    hideSelectView();
+                }
             }
         });
         // 设置当前TextView关联状态变化时的监听
@@ -270,6 +276,8 @@ public class SelectableTextHelper {
         showCursorHandle(mStartHandle);
         showCursorHandle(mEndHandle);
         mOperateWindow.show();
+        // 恢复初始值
+        DEFAULT_SELECTION_LENGTH = 1;
     }
 
     /**
@@ -313,20 +321,44 @@ public class SelectableTextHelper {
     /**
      * 实现画线的方法
      */
-    private void showUnderLine() {
+    private void showUnderLine(View view) {
+        TextView mDelete;
+        mDelete = (TextView) view.findViewById(R.id.selectable_delete);
+        mDelete.setEnabled(true);
         if (mSpannable != null) {
-            mUnderlineSpan = new UnderlineSpan() {
+            ClickableSpan mClickableSpan = new ClickableSpan() {
+
+                @Override
+                public void onClick(View widget) {
+                    // 弹出菜单
+                    isHide = false;
+                    // 获取该ClickableSpan的坐标
+                    Layout layout = mTextView.getLayout();
+                    int line = layout.getLineForOffset(mTextView.getSelectionStart());
+                    // 得到该字符的X坐标
+                    int offsetX = (int) layout.getPrimaryHorizontal(mTextView.getSelectionStart());
+                    // 得到该字符的矩形区域
+                    Rect rect = new Rect();
+                    layout.getLineBounds(line, rect);
+                    // 得到该字符的Y坐标
+                    int offsetY = rect.top;
+                    DEFAULT_SELECTION_LENGTH = mTextView.getSelectionEnd() - mTextView.getSelectionStart();
+                    showSelectView(offsetX, offsetY);
+                }
+
                 @Override
                 public void updateDrawState(TextPaint ds) {
-                    ds.setColor(mUnderlineColor);
                     super.updateDrawState(ds);
+                    ds.setColor(mUnderlineColor);
+                    ds.setUnderlineText(true);
                 }
             };
-            mSpannable.setSpan(mUnderlineSpan,
+            mSpannable.setSpan(mClickableSpan,
                     mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
-                    Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
             mTextView.setText(mSpannable);
+            mTextView.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 
@@ -364,8 +396,6 @@ public class SelectableTextHelper {
         mStartHandle = null;
         mEndHandle = null;
         mOperateWindow = null;
-
-        mUnderlineSpan = null;
     }
 
     /**
@@ -419,7 +449,7 @@ public class SelectableTextHelper {
 
         public OperateWindow(final Context context, final int menuId) {
             // 解析弹出的菜单
-            View contentView = LayoutInflater.from(context).inflate(menuId, null);
+            final View contentView = LayoutInflater.from(context).inflate(menuId, null);
             contentView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
                     View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
             mWidth = contentView.getMeasuredWidth();
@@ -462,7 +492,7 @@ public class SelectableTextHelper {
                 public void onClick(View v) {
                     hideSelectView();
                     resetSelectionInfo();
-                    showUnderLine();
+                    showUnderLine(contentView);
                 }
             });
             // 设置红色下划线
@@ -472,7 +502,14 @@ public class SelectableTextHelper {
                     hideSelectView();
                     resetSelectionInfo();
                     mUnderlineColor = Color.RED;
-                    showUnderLine();
+                    showUnderLine(contentView);
+                }
+            });
+            // 设置删除下划线
+            contentView.findViewById(R.id.selectable_delete).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
                 }
             });
         }
