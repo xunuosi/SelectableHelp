@@ -4,12 +4,15 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 import android.support.annotation.ColorInt;
+import android.support.v4.graphics.ColorUtils;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
+import android.text.TextPaint;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.LineBackgroundSpan;
 import android.text.style.UnderlineSpan;
@@ -48,7 +51,12 @@ public class SelectableTextHelper {
      * 改变文本背景色
      */
     private BackgroundColorSpan mBgSpan;
+    /**
+     * 下划线
+     */
     private UnderlineSpan mUnderlineSpan;
+    private int mUnderlineColor = Color.RED;
+    private Paint mUnderlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private int mTouchX;
     private int mTouchY;
@@ -97,6 +105,8 @@ public class SelectableTextHelper {
         // 由于 TextView 的文本的 BufferType 类型；
         // 是 SPANNABLE 时才可以设置 Span ，实现选中的效果；
         mTextView.setText(mTextView.getText(), TextView.BufferType.SPANNABLE);
+
+        mUnderlinePaint.setColor(mUnderlineColor);
 
         mTextView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -305,7 +315,13 @@ public class SelectableTextHelper {
      */
     private void showUnderLine() {
         if (mSpannable != null) {
-            mUnderlineSpan = new UnderlineSpan();
+            mUnderlineSpan = new UnderlineSpan() {
+                @Override
+                public void updateDrawState(TextPaint ds) {
+                    ds.setColor(mUnderlineColor);
+                    super.updateDrawState(ds);
+                }
+            };
             mSpannable.setSpan(mUnderlineSpan,
                     mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
                     Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
@@ -348,6 +364,8 @@ public class SelectableTextHelper {
         mStartHandle = null;
         mEndHandle = null;
         mOperateWindow = null;
+
+        mUnderlineSpan = null;
     }
 
     /**
@@ -444,6 +462,16 @@ public class SelectableTextHelper {
                 public void onClick(View v) {
                     hideSelectView();
                     resetSelectionInfo();
+                    showUnderLine();
+                }
+            });
+            // 设置红色下划线
+            contentView.findViewById(R.id.red_color).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    hideSelectView();
+                    resetSelectionInfo();
+                    mUnderlineColor = Color.RED;
                     showUnderLine();
                 }
             });
