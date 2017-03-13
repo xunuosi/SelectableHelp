@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Build;
 import android.support.annotation.ColorInt;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.ColorUtils;
 import android.text.Layout;
 import android.text.Spannable;
@@ -321,17 +322,24 @@ public class SelectableTextHelper {
     /**
      * 实现画线的方法
      */
-    private void showUnderLine(View view) {
-        TextView mDelete;
-        mDelete = (TextView) view.findViewById(R.id.selectable_delete);
-        mDelete.setEnabled(true);
+    private void showUnderLine() {
+
         if (mSpannable != null) {
             ClickableSpan mClickableSpan = new ClickableSpan() {
 
                 @Override
                 public void onClick(View widget) {
+                    // 设置TextView高亮部分背景颜色为透明
+                    mTextView.setHighlightColor(ContextCompat.getColor(mContext,
+                            android.R.color.transparent));
+                    // 将点击部分的信息保存到SelectionInfo中
+                    mSelectionInfo.setStart(mTextView.getSelectionStart());
+                    mSelectionInfo.setEnd(mTextView.getSelectionEnd());
+                    mSelectionInfo.setSelectionContent(mTextView.getText().toString()
+                            .substring(mTextView.getSelectionStart(), mTextView.getSelectionEnd()));
                     // 弹出菜单
                     isHide = false;
+                    mOperateWindow.setDel(true);
                     // 获取该ClickableSpan的坐标
                     Layout layout = mTextView.getLayout();
                     int line = layout.getLineForOffset(mTextView.getSelectionStart());
@@ -353,6 +361,7 @@ public class SelectableTextHelper {
                     ds.setUnderlineText(true);
                 }
             };
+
             mSpannable.setSpan(mClickableSpan,
                     mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -360,6 +369,13 @@ public class SelectableTextHelper {
             mTextView.setText(mSpannable);
             mTextView.setMovementMethod(LinkMovementMethod.getInstance());
         }
+    }
+
+    /**
+     * 删除下划线的方法
+     */
+    private void delUnderline() {
+
     }
 
     /**
@@ -443,6 +459,7 @@ public class SelectableTextHelper {
     private class OperateWindow {
 
         private PopupWindow mWindow;
+        private TextView mDelTv;
 
         private int mWidth;
         private int mHeight;
@@ -492,7 +509,7 @@ public class SelectableTextHelper {
                 public void onClick(View v) {
                     hideSelectView();
                     resetSelectionInfo();
-                    showUnderLine(contentView);
+                    showUnderLine();
                 }
             });
             // 设置红色下划线
@@ -502,14 +519,17 @@ public class SelectableTextHelper {
                     hideSelectView();
                     resetSelectionInfo();
                     mUnderlineColor = Color.RED;
-                    showUnderLine(contentView);
+                    showUnderLine();
                 }
             });
-            // 设置删除下划线
-            contentView.findViewById(R.id.selectable_delete).setOnClickListener(new View.OnClickListener() {
+            // 删除下划线逻辑部分
+            mDelTv = (TextView) contentView.findViewById(R.id.selectable_delete);
+            mDelTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    Log.e("xns", "mDelTv.onClick()");
+                    delUnderline();
+                    setDel(false);
                 }
             });
         }
@@ -548,6 +568,15 @@ public class SelectableTextHelper {
             return mWindow.isShowing();
         }
 
+        /**
+         * 设置弹窗菜单是否能够使用删除按钮
+         *
+         * @param del
+         */
+        public void setDel(boolean del) {
+            Log.e("xns", "setDel()" + del);
+            mDelTv.setEnabled(del);
+        }
     }
 
     /**
