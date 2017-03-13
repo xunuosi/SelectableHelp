@@ -64,10 +64,6 @@ public class SelectableTextHelper {
      */
     private BackgroundColorSpan mBgSpan;
     /**
-     * 下划线
-     */
-    private int mUnderlineColor = Color.RED;
-    /**
      * 比HashMap<Integer,Object>更高效
      */
     private SparseArrayCompat<ClickableSpan> clickSpanMap;
@@ -329,10 +325,8 @@ public class SelectableTextHelper {
 
     /**
      * 实现画线的方法
-     *
-     * @param isShow:是否显示画线的方法
      */
-    private void showUnderLine(boolean isShow) {
+    private void showUnderLine(final WeakReference<TextPaint> paint) {
         ClickableSpan mClickableSpan;
         if (mSpannable != null) {
             if (clickSpanMap == null) {
@@ -340,9 +334,9 @@ public class SelectableTextHelper {
             }
             if (clickSpanMap.get(mSelectionInfo.getStart()) != null) {
                 mClickableSpan = clickSpanMap.get(mTextView.getSelectionStart());
+                mClickableSpan.updateDrawState(paint.get());
             } else {
                 mClickableSpan = new ClickableSpan() {
-
                     @Override
                     public void onClick(View widget) {
                         // 设置TextView高亮部分背景颜色为透明
@@ -373,25 +367,21 @@ public class SelectableTextHelper {
                     @Override
                     public void updateDrawState(TextPaint ds) {
                         super.updateDrawState(ds);
-                        ds.setColor(mUnderlineColor);
+                        ds.set(paint.get());
                         ds.setUnderlineText(true);
                     }
                 };
-            }
-            if (isShow) {
                 // 添加到ClickSpan集合中
                 clickSpanMap.append(mSelectionInfo.getStart(), mClickableSpan);
-
-                mSpannable.setSpan(mClickableSpan,
-                        mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                mTextView.setMovementMethod(LinkMovementMethod.getInstance());
-            } else {
-                hideSelectView();
-                resetSelectionInfo();
-                mSpannable.removeSpan(mClickableSpan);
-                clickSpanMap.delete(mTextView.getSelectionStart());
             }
+//            // 添加文本画笔
+//            mClickableSpan.updateDrawState(paint.get());
+            // 设置点击部分
+            mSpannable.setSpan(mClickableSpan,
+                    mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mTextView.setMovementMethod(LinkMovementMethod.getInstance());
+//            }
             mTextView.setText(mSpannable);
         }
     }
@@ -400,7 +390,12 @@ public class SelectableTextHelper {
      * 删除下划线的方法
      */
     private void delUnderline() {
-        showUnderLine(false);
+        ClickableSpan mClickableSpan = clickSpanMap.get(mTextView.getSelectionStart());
+        hideSelectView();
+        resetSelectionInfo();
+        mSpannable.removeSpan(mClickableSpan);
+        clickSpanMap.delete(mTextView.getSelectionStart());
+        mTextView.setText(mSpannable);
     }
 
     /**
@@ -537,9 +532,7 @@ public class SelectableTextHelper {
             contentView.findViewById(R.id.tv_drawLine).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    hideSelectView();
-                    resetSelectionInfo();
-                    showUnderLine(true);
+
                 }
             });
             // 设置红色下划线
@@ -548,8 +541,24 @@ public class SelectableTextHelper {
                 public void onClick(View v) {
                     hideSelectView();
                     resetSelectionInfo();
-                    mUnderlineColor = Color.RED;
-                    showUnderLine(true);
+                    WeakReference<TextPaint> mTextPaint = new WeakReference<>(new TextPaint(
+                            new Paint(Paint.ANTI_ALIAS_FLAG)));
+                    mTextPaint.get().setTextSize(mTextView.getTextSize());
+                    mTextPaint.get().setColor(Color.RED);
+                    showUnderLine(mTextPaint);
+                }
+            });
+            // 设置蓝色下划线
+            contentView.findViewById(R.id.blue_color).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    hideSelectView();
+                    resetSelectionInfo();
+                    WeakReference<TextPaint> mTextPaint = new WeakReference<>(new TextPaint(
+                            mTextView.getPaint()));
+                    mTextPaint.get().setTextSize(mTextView.getTextSize());
+                    mTextPaint.get().setColor(Color.BLUE);
+                    showUnderLine(mTextPaint);
                 }
             });
             // 删除下划线逻辑部分
@@ -559,7 +568,7 @@ public class SelectableTextHelper {
                 public void onClick(View v) {
                     Log.e("xns", "mDelTv.onClick()");
                     delUnderline();
-//                    setDel(false);
+                    setDel(false);
                 }
             });
         }
@@ -604,7 +613,6 @@ public class SelectableTextHelper {
          * @param del
          */
         public void setDel(boolean del) {
-            Log.e("xns", "setDel()" + del);
             mDelTv.setEnabled(del);
         }
     }

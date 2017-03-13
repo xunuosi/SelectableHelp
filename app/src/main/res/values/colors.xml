@@ -9,4 +9,5 @@
     <color name="cursor_handle_color">#0d7aff</color>
     <color name="selected_blue">#afe1f4</color>
     <color name="red">#f21212</color>
+    <color name="blue">#29c1f4</color>
 </resources>

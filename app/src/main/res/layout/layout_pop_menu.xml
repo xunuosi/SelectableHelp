@@ -17,15 +17,17 @@
             android:background="@drawable/selectable_help_color"/>
 
         <TextView
+            android:id="@+id/blue_color"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@drawable/selectable_help_blue"
+            android:layout_marginLeft="10dp"/>
+
+        <TextView
             android:id="@+id/selectable_delete"
             style="@style/OperateTextView"
             android:text="@string/delete"
             android:enabled="false"/>
-
-        <TextView
-            android:id="@+id/tv_select_all_up"
-            style="@style/OperateTextView"
-            android:text="@string/select_all"/>
     </LinearLayout>
     <LinearLayout
         android:id="@+id/layout_down"
