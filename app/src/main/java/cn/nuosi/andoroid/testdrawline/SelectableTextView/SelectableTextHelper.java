@@ -66,7 +66,7 @@ public class SelectableTextHelper {
     /**
      * 比HashMap<Integer,Object>更高效
      */
-    private SparseArrayCompat<ClickableSpan> clickSpanMap;
+    private SparseArrayCompat<MyClickableSpan> clickSpanMap;
 
     private int mTouchX;
     private int mTouchY;
@@ -326,17 +326,19 @@ public class SelectableTextHelper {
     /**
      * 实现画线的方法
      */
-    private void showUnderLine(final WeakReference<TextPaint> paint) {
-        ClickableSpan mClickableSpan;
+    private void showUnderLine(final TextPaint paint) {
+        MyClickableSpan mClickableSpan;
         if (mSpannable != null) {
             if (clickSpanMap == null) {
                 clickSpanMap = new SparseArrayCompat<>();
             }
             if (clickSpanMap.get(mSelectionInfo.getStart()) != null) {
                 mClickableSpan = clickSpanMap.get(mTextView.getSelectionStart());
-                mClickableSpan.updateDrawState(paint.get());
+                Log.e("xns", "map:" + mClickableSpan.toString());
+                mClickableSpan.setTextPaint(paint);
+                Log.e("xns", "map2:" + mClickableSpan.toString());
             } else {
-                mClickableSpan = new ClickableSpan() {
+                mClickableSpan = new MyClickableSpan(paint) {
                     @Override
                     public void onClick(View widget) {
                         // 设置TextView高亮部分背景颜色为透明
@@ -363,19 +365,13 @@ public class SelectableTextHelper {
                         DEFAULT_SELECTION_LENGTH = mTextView.getSelectionEnd() - mTextView.getSelectionStart();
                         showSelectView(offsetX, offsetY);
                     }
-
-                    @Override
-                    public void updateDrawState(TextPaint ds) {
-                        super.updateDrawState(ds);
-                        ds.set(paint.get());
-                        ds.setUnderlineText(true);
-                    }
                 };
+                Log.e("xns", "mclickable:" + mClickableSpan.toString());
+                // 将选中状态的信息保存到MyClickableSpan中
+                mClickableSpan.setInfo(mSelectionInfo);
                 // 添加到ClickSpan集合中
                 clickSpanMap.append(mSelectionInfo.getStart(), mClickableSpan);
             }
-//            // 添加文本画笔
-//            mClickableSpan.updateDrawState(paint.get());
             // 设置点击部分
             mSpannable.setSpan(mClickableSpan,
                     mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
@@ -545,7 +541,7 @@ public class SelectableTextHelper {
                             new Paint(Paint.ANTI_ALIAS_FLAG)));
                     mTextPaint.get().setTextSize(mTextView.getTextSize());
                     mTextPaint.get().setColor(Color.RED);
-                    showUnderLine(mTextPaint);
+                    showUnderLine(mTextPaint.get());
                 }
             });
             // 设置蓝色下划线
@@ -558,7 +554,7 @@ public class SelectableTextHelper {
                             mTextView.getPaint()));
                     mTextPaint.get().setTextSize(mTextView.getTextSize());
                     mTextPaint.get().setColor(Color.BLUE);
-                    showUnderLine(mTextPaint);
+                    showUnderLine(mTextPaint.get());
                 }
             });
             // 删除下划线逻辑部分
