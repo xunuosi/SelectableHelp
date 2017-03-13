@@ -3,6 +3,7 @@ package cn.nuosi.andoroid.testdrawline.SelectableTextView;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -37,6 +38,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.nuosi.andoroid.testdrawline.FlaotActivity;
 import cn.nuosi.andoroid.testdrawline.R;
 
 /**
@@ -525,10 +527,13 @@ public class SelectableTextHelper {
                 }
             });
             // 设置下划线
-            contentView.findViewById(R.id.tv_drawLine).setOnClickListener(new View.OnClickListener() {
+            contentView.findViewById(R.id.tv_note).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    // 跳转完成记笔记的功能
+                    Intent intent = new Intent(mContext, FlaotActivity.class);
+                    intent.putExtra("content", mSelectionInfo.getSelectionContent());
+                    mContext.startActivity(intent);
                 }
             });
             // 设置红色下划线
@@ -562,8 +567,8 @@ public class SelectableTextHelper {
             mDelTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.e("xns", "mDelTv.onClick()");
                     delUnderline();
+                    // 设置删除按钮无效
                     setDel(false);
                 }
             });

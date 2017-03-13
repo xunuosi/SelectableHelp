@@ -38,9 +38,9 @@
         android:paddingRight="5dp"
         android:layout_below="@id/layout_up">
         <TextView
-            android:id="@+id/tv_drawLine"
+            android:id="@+id/tv_note"
             style="@style/OperateTextView"
-            android:text="画线"/>
+            android:text="@string/note"/>
 
         <TextView
             android:id="@+id/tv_copy"
