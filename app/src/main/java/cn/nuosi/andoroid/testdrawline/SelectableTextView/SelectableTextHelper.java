@@ -11,6 +11,7 @@ import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.ColorUtils;
+import android.support.v4.util.SparseArrayCompat;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
@@ -21,6 +22,7 @@ import android.text.style.ClickableSpan;
 import android.text.style.LineBackgroundSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -32,6 +34,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
 
 import cn.nuosi.andoroid.testdrawline.R;
 
@@ -63,6 +67,10 @@ public class SelectableTextHelper {
      * 下划线
      */
     private int mUnderlineColor = Color.RED;
+    /**
+     * 比HashMap<Integer,Object>更高效
+     */
+    private SparseArrayCompat<ClickableSpan> clickSpanMap;
 
     private int mTouchX;
     private int mTouchY;
@@ -321,53 +329,70 @@ public class SelectableTextHelper {
 
     /**
      * 实现画线的方法
+     *
+     * @param isShow:是否显示画线的方法
      */
-    private void showUnderLine() {
-
+    private void showUnderLine(boolean isShow) {
+        ClickableSpan mClickableSpan;
         if (mSpannable != null) {
-            ClickableSpan mClickableSpan = new ClickableSpan() {
+            if (clickSpanMap == null) {
+                clickSpanMap = new SparseArrayCompat<>();
+            }
+            if (clickSpanMap.get(mSelectionInfo.getStart()) != null) {
+                mClickableSpan = clickSpanMap.get(mTextView.getSelectionStart());
+            } else {
+                mClickableSpan = new ClickableSpan() {
 
-                @Override
-                public void onClick(View widget) {
-                    // 设置TextView高亮部分背景颜色为透明
-                    mTextView.setHighlightColor(ContextCompat.getColor(mContext,
-                            android.R.color.transparent));
-                    // 将点击部分的信息保存到SelectionInfo中
-                    mSelectionInfo.setStart(mTextView.getSelectionStart());
-                    mSelectionInfo.setEnd(mTextView.getSelectionEnd());
-                    mSelectionInfo.setSelectionContent(mTextView.getText().toString()
-                            .substring(mTextView.getSelectionStart(), mTextView.getSelectionEnd()));
-                    // 弹出菜单
-                    isHide = false;
-                    mOperateWindow.setDel(true);
-                    // 获取该ClickableSpan的坐标
-                    Layout layout = mTextView.getLayout();
-                    int line = layout.getLineForOffset(mTextView.getSelectionStart());
-                    // 得到该字符的X坐标
-                    int offsetX = (int) layout.getPrimaryHorizontal(mTextView.getSelectionStart());
-                    // 得到该字符的矩形区域
-                    Rect rect = new Rect();
-                    layout.getLineBounds(line, rect);
-                    // 得到该字符的Y坐标
-                    int offsetY = rect.top;
-                    DEFAULT_SELECTION_LENGTH = mTextView.getSelectionEnd() - mTextView.getSelectionStart();
-                    showSelectView(offsetX, offsetY);
-                }
+                    @Override
+                    public void onClick(View widget) {
+                        // 设置TextView高亮部分背景颜色为透明
+                        mTextView.setHighlightColor(ContextCompat.getColor(mContext,
+                                android.R.color.transparent));
+                        // 将点击部分的信息保存到SelectionInfo中
+                        mSelectionInfo.setStart(mTextView.getSelectionStart());
+                        mSelectionInfo.setEnd(mTextView.getSelectionEnd());
+                        mSelectionInfo.setSelectionContent(mTextView.getText().toString()
+                                .substring(mTextView.getSelectionStart(), mTextView.getSelectionEnd()));
+                        // 弹出菜单
+                        isHide = false;
+                        mOperateWindow.setDel(true);
+                        // 获取该ClickableSpan的坐标
+                        Layout layout = mTextView.getLayout();
+                        int line = layout.getLineForOffset(mTextView.getSelectionStart());
+                        // 得到该字符的X坐标
+                        int offsetX = (int) layout.getPrimaryHorizontal(mTextView.getSelectionStart());
+                        // 得到该字符的矩形区域
+                        Rect rect = new Rect();
+                        layout.getLineBounds(line, rect);
+                        // 得到该字符的Y坐标
+                        int offsetY = rect.top;
+                        DEFAULT_SELECTION_LENGTH = mTextView.getSelectionEnd() - mTextView.getSelectionStart();
+                        showSelectView(offsetX, offsetY);
+                    }
 
-                @Override
-                public void updateDrawState(TextPaint ds) {
-                    super.updateDrawState(ds);
-                    ds.setColor(mUnderlineColor);
-                    ds.setUnderlineText(true);
-                }
-            };
+                    @Override
+                    public void updateDrawState(TextPaint ds) {
+                        super.updateDrawState(ds);
+                        ds.setColor(mUnderlineColor);
+                        ds.setUnderlineText(true);
+                    }
+                };
+            }
+            if (isShow) {
+                // 添加到ClickSpan集合中
+                clickSpanMap.append(mSelectionInfo.getStart(), mClickableSpan);
 
-            mSpannable.setSpan(mClickableSpan,
-                    mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
+                mSpannable.setSpan(mClickableSpan,
+                        mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                mTextView.setMovementMethod(LinkMovementMethod.getInstance());
+            } else {
+                hideSelectView();
+                resetSelectionInfo();
+                mSpannable.removeSpan(mClickableSpan);
+                clickSpanMap.delete(mTextView.getSelectionStart());
+            }
             mTextView.setText(mSpannable);
-            mTextView.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 
@@ -375,7 +400,7 @@ public class SelectableTextHelper {
      * 删除下划线的方法
      */
     private void delUnderline() {
-
+        showUnderLine(false);
     }
 
     /**
@@ -412,6 +437,11 @@ public class SelectableTextHelper {
         mStartHandle = null;
         mEndHandle = null;
         mOperateWindow = null;
+
+        if (clickSpanMap != null) {
+            clickSpanMap.clear();
+            clickSpanMap = null;
+        }
     }
 
     /**
@@ -509,7 +539,7 @@ public class SelectableTextHelper {
                 public void onClick(View v) {
                     hideSelectView();
                     resetSelectionInfo();
-                    showUnderLine();
+                    showUnderLine(true);
                 }
             });
             // 设置红色下划线
@@ -519,7 +549,7 @@ public class SelectableTextHelper {
                     hideSelectView();
                     resetSelectionInfo();
                     mUnderlineColor = Color.RED;
-                    showUnderLine();
+                    showUnderLine(true);
                 }
             });
             // 删除下划线逻辑部分
@@ -529,7 +559,7 @@ public class SelectableTextHelper {
                 public void onClick(View v) {
                     Log.e("xns", "mDelTv.onClick()");
                     delUnderline();
-                    setDel(false);
+//                    setDel(false);
                 }
             });
         }
