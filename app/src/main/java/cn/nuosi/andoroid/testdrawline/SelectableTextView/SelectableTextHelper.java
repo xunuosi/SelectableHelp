@@ -41,8 +41,11 @@ import java.util.List;
 import java.util.Map;
 
 import cn.nuosi.andoroid.testdrawline.FlaotActivity;
+import cn.nuosi.andoroid.testdrawline.GreenDaoManager;
 import cn.nuosi.andoroid.testdrawline.R;
 import cn.nuosi.andoroid.testdrawline.dao.Book;
+import cn.nuosi.andoroid.testdrawline.greendao.gen.BookDao;
+import cn.nuosi.andoroid.testdrawline.greendao.gen.DaoSession;
 
 /**
  * Created by Elder on 2017/3/9.
@@ -122,25 +125,33 @@ public class SelectableTextHelper {
     }
 
     private void init() {
-        // 初始化保存标记对象的集合
-        clickSpanMap = new SparseArrayCompat<>();
-        // 将数据库中的标记全部载入到当前TextView中
-//        if (mBookList != null) {
-//            for (Book bean : mBookList) {
-//                TextPaint textPaint = getPaint(new TextPaint(
-//                        new Paint(Paint.ANTI_ALIAS_FLAG)), bean.getColor());
-//                MyClickableSpan span = new MyClickableSpan(textPaint) {
-//                    @Override
-//                    public void onClick(View widget) {
-//                        clickSelectSpan();
-//                    }
-//                };
-//                clickSpanMap.append(bean);
-//            }
-//        }
         // 由于 TextView 的文本的 BufferType 类型；
         // 是 SPANNABLE 时才可以设置 Span ，实现选中的效果；
         mTextView.setText(mTextView.getText(), TextView.BufferType.SPANNABLE);
+        // 初始化保存标记对象的集合
+        clickSpanMap = new SparseArrayCompat<>();
+        Log.e("xns", "mBookList:" + mBookList.toString());
+        // 将数据库中的标记全部载入到当前TextView中
+        if (mBookList != null) {
+            Log.e("xns", "mBookList != null");
+            Spannable mSpan = null;
+            if (mTextView.getText() instanceof Spannable) {
+                mSpan = (Spannable) mTextView.getText();
+            }
+            for (Book bean : mBookList) {
+                TextPaint textPaint = getPaint(new TextPaint(
+                        new Paint(Paint.ANTI_ALIAS_FLAG)), bean.getColor());
+                MyClickableSpan clickSpan = new MyClickableSpan(textPaint) {
+                    @Override
+                    public void onClick(View widget) {
+                        clickSelectSpan();
+                    }
+                };
+                clickSpanMap.append(bean.getStart(), clickSpan);
+                mSpan.setSpan(clickSpan, bean.getStart(), bean.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                mTextView.setText(mSpan);
+            }
+        }
 
         mTextView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -368,6 +379,9 @@ public class SelectableTextHelper {
      * 实现画线的方法
      */
     private void showUnderLine(final TextPaint paint) {
+        // 将划线颜色信息保存到SelectionInfo中
+        mSelectionInfo.setColor(paint.getColor());
+
         MyClickableSpan mClickableSpan;
         if (mSpannable != null) {
             if (clickSpanMap.get(mSelectionInfo.getStart()) != null) {
@@ -380,29 +394,36 @@ public class SelectableTextHelper {
                         clickSelectSpan();
                     }
                 };
-                Log.e("xns", "mclickable:" + mClickableSpan.toString());
                 // 将选中状态的信息保存到MyClickableSpan中
                 mClickableSpan.setInfo(mSelectionInfo);
                 // 添加到ClickSpan集合中
                 clickSpanMap.append(mSelectionInfo.getStart(), mClickableSpan);
+                // 将标记信息存入到数据库中
+                saveNote(mSelectionInfo);
             }
             // 设置点击部分
             mSpannable.setSpan(mClickableSpan,
                     mSelectionInfo.getStart(), mSelectionInfo.getEnd(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             mTextView.setMovementMethod(LinkMovementMethod.getInstance());
-//            }
+            // Refresh
             mTextView.setText(mSpannable);
-            // 将标记信息存入到数据库中
-            saveNote();
         }
     }
 
     /**
      * 将标记信息存储到数据库中的方法
+     *
+     * @param info
      */
-    private void saveNote() {
-
+    private void saveNote(SelectionInfo info) {
+        BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
+        Book book = new Book();
+        book.setColor(info.getColor());
+        book.setStart(info.getStart());
+        book.setEnd(info.getEnd());
+        book.setContent(info.getSelectionContent());
+        dao.insertOrReplace(book);
     }
 
 

@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 .setSelectedColor(ContextCompat.getColor(MainActivity.this, R.color.selected_blue))
                 .setCursorHandleSizeInDp(20)
                 .setPopMenu(R.layout.layout_pop_menu)
+                .setBookList(mBookList)
                 .setCursorHandleColor(ContextCompat.getColor(MainActivity.this, R.color.cursor_handle_color))
                 .build();
 
