@@ -127,13 +127,15 @@ public class SelectableTextHelper {
         // 将数据库中的标记全部载入到当前TextView中
 //        if (mBookList != null) {
 //            for (Book bean : mBookList) {
-//                TextPaint
-//                MyClickableSpan span = new MyClickableSpan() {
+//                TextPaint textPaint = getPaint(new TextPaint(
+//                        new Paint(Paint.ANTI_ALIAS_FLAG)), bean.getColor());
+//                MyClickableSpan span = new MyClickableSpan(textPaint) {
 //                    @Override
 //                    public void onClick(View widget) {
-//
+//                        clickSelectSpan();
 //                    }
-//                }
+//                };
+//                clickSpanMap.append(bean);
 //            }
 //        }
         // 由于 TextView 的文本的 BufferType 类型；
@@ -370,15 +372,12 @@ public class SelectableTextHelper {
         if (mSpannable != null) {
             if (clickSpanMap.get(mSelectionInfo.getStart()) != null) {
                 mClickableSpan = clickSpanMap.get(mTextView.getSelectionStart());
-                Log.e("xns", "map:" + mClickableSpan.toString());
                 mClickableSpan.setTextPaint(paint);
-                Log.e("xns", "map2:" + mClickableSpan.toString());
             } else {
                 mClickableSpan = new MyClickableSpan(paint) {
                     @Override
                     public void onClick(View widget) {
                         clickSelectSpan();
-
                     }
                 };
                 Log.e("xns", "mclickable:" + mClickableSpan.toString());
@@ -395,9 +394,17 @@ public class SelectableTextHelper {
 //            }
             mTextView.setText(mSpannable);
             // 将标记信息存入到数据库中
-
+            saveNote();
         }
     }
+
+    /**
+     * 将标记信息存储到数据库中的方法
+     */
+    private void saveNote() {
+
+    }
+
 
     /**
      * 点击画线区域时调用的方法
