@@ -133,7 +133,6 @@ public class SelectableTextHelper {
         Log.e("xns", "mBookList:" + mBookList.toString());
         // 将数据库中的标记全部载入到当前TextView中
         if (mBookList != null) {
-            Log.e("xns", "mBookList != null");
             Spannable mSpan = null;
             if (mTextView.getText() instanceof Spannable) {
                 mSpan = (Spannable) mTextView.getText();
@@ -423,7 +422,7 @@ public class SelectableTextHelper {
         book.setStart(info.getStart());
         book.setEnd(info.getEnd());
         book.setContent(info.getSelectionContent());
-        dao.insertOrReplace(book);
+        dao.insert(book);
     }
 
 

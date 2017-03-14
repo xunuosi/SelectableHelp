@@ -14,7 +14,7 @@ import org.greenrobot.greendao.annotation.Generated;
 public class Book {
     @Index
     @Id(autoincrement = true)
-    private long id;
+    private Long id;
 
     private String name;
 
@@ -30,8 +30,8 @@ public class Book {
     }
 
 
-    @Generated(hash = 1314692629)
-    public Book(long id, String name, int start, int end, int color, String content,
+    @Generated(hash = 647292832)
+    public Book(Long id, String name, int start, int end, int color, String content,
             String note) {
         this.id = id;
         this.name = name;
@@ -40,15 +40,6 @@ public class Book {
         this.color = color;
         this.content = content;
         this.note = note;
-    }
-
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -97,5 +88,13 @@ public class Book {
 
     public void setColor(int color) {
         this.color = color;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }
