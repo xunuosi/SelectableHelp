@@ -102,8 +102,6 @@ public class MainActivity extends AppCompatActivity {
         mBookDao = GreenDaoManager.getInstance().getSession().getBookDao();
         mBookList = GreenDaoManager.getInstance().getSession()
                 .getBookDao().queryBuilder().build().list();
-        Log.e("xns", "mBookList:" + mBookList.toString());
-
     }
 
 

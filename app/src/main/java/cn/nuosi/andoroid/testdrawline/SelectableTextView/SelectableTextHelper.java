@@ -19,6 +19,7 @@ import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
+import android.text.method.MovementMethod;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ClickableSpan;
 import android.text.style.LineBackgroundSpan;
@@ -137,19 +138,20 @@ public class SelectableTextHelper {
             if (mTextView.getText() instanceof Spannable) {
                 mSpan = (Spannable) mTextView.getText();
             }
-            for (Book bean : mBookList) {
+            for (final Book bean : mBookList) {
                 TextPaint textPaint = getPaint(new TextPaint(
                         new Paint(Paint.ANTI_ALIAS_FLAG)), bean.getColor());
                 MyClickableSpan clickSpan = new MyClickableSpan(textPaint) {
                     @Override
                     public void onClick(View widget) {
-                        clickSelectSpan();
+                        clickSelectSpan(bean.getStart(),bean.getEnd());
                     }
                 };
                 clickSpanMap.append(bean.getStart(), clickSpan);
                 mSpan.setSpan(clickSpan, bean.getStart(), bean.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 mTextView.setText(mSpan);
             }
+            mTextView.setMovementMethod(LinkMovementMethod.getInstance());
         }
 
         mTextView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -390,7 +392,7 @@ public class SelectableTextHelper {
                 mClickableSpan = new MyClickableSpan(paint) {
                     @Override
                     public void onClick(View widget) {
-                        clickSelectSpan();
+                        clickSelectSpan(mTextView.getSelectionStart(), mTextView.getSelectionEnd());
                     }
                 };
                 // 将选中状态的信息保存到MyClickableSpan中
@@ -429,29 +431,29 @@ public class SelectableTextHelper {
     /**
      * 点击画线区域时调用的方法
      */
-    private void clickSelectSpan() {
+    private void clickSelectSpan(int start, int end) {
         // 设置TextView高亮部分背景颜色为透明
         mTextView.setHighlightColor(ContextCompat.getColor(mContext,
                 android.R.color.transparent));
         // 将点击部分的信息保存到SelectionInfo中
-        mSelectionInfo.setStart(mTextView.getSelectionStart());
-        mSelectionInfo.setEnd(mTextView.getSelectionEnd());
+        mSelectionInfo.setStart(start);
+        mSelectionInfo.setEnd(end);
         mSelectionInfo.setSelectionContent(mTextView.getText().toString()
-                .substring(mTextView.getSelectionStart(), mTextView.getSelectionEnd()));
+                .substring(start, end));
         // 弹出菜单
         isHide = false;
         mOperateWindow.setDel(true);
         // 获取该ClickableSpan的坐标
         Layout layout = mTextView.getLayout();
-        int line = layout.getLineForOffset(mTextView.getSelectionStart());
+        int line = layout.getLineForOffset(start);
         // 得到该字符的X坐标
-        int offsetX = (int) layout.getPrimaryHorizontal(mTextView.getSelectionStart());
+        int offsetX = (int) layout.getPrimaryHorizontal(start);
         // 得到该字符的矩形区域
         Rect rect = new Rect();
         layout.getLineBounds(line, rect);
         // 得到该字符的Y坐标
         int offsetY = rect.top;
-        DEFAULT_SELECTION_LENGTH = mTextView.getSelectionEnd() - mTextView.getSelectionStart();
+        DEFAULT_SELECTION_LENGTH = end - start;
         showSelectView(offsetX, offsetY);
     }
 
@@ -465,6 +467,15 @@ public class SelectableTextHelper {
         mSpannable.removeSpan(mClickableSpan);
         clickSpanMap.delete(mTextView.getSelectionStart());
         mTextView.setText(mSpannable);
+        // 从数据库中删除数据
+        delNote(mClickableSpan);
+    }
+
+    /**
+     * 删除数据库中数据的方法
+     * @param mClickableSpan
+     */
+    private void delNote(ClickableSpan mClickableSpan) {
     }
 
     /**
