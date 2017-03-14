@@ -461,7 +461,7 @@ public class SelectableTextHelper {
      * 删除下划线的方法
      */
     private void delUnderline() {
-        ClickableSpan mClickableSpan = clickSpanMap.get(mTextView.getSelectionStart());
+        MyClickableSpan mClickableSpan = clickSpanMap.get(mTextView.getSelectionStart());
         hideSelectView();
         resetSelectionInfo();
         mSpannable.removeSpan(mClickableSpan);
@@ -473,9 +473,20 @@ public class SelectableTextHelper {
 
     /**
      * 删除数据库中数据的方法
-     * @param mClickableSpan
+     * @param clicSpan
      */
-    private void delNote(ClickableSpan mClickableSpan) {
+    private void delNote(MyClickableSpan clicSpan) {
+        BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
+        Book book = new Book();
+        SelectionInfo info = clicSpan.getInfo();
+        Log.e("xns", "info:" + info);
+        if (info != null) {
+            book.setColor(info.getColor());
+            book.setStart(info.getStart());
+            book.setEnd(info.getEnd());
+            book.setContent(info.getSelectionContent());
+            dao.delete(book);
+        }
     }
 
     /**
