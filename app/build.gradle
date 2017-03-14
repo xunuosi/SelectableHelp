@@ -18,6 +18,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    greendao {
+        schemaVersion 1
+        daoPackage 'cn.nuosi.andoroid.testdrawline.greendao.gen'
+        targetGenDir 'src/main/java'
+    }
 }
 
 dependencies {
