@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Build;
 import android.support.annotation.ColorInt;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.ColorUtils;
 import android.support.v4.util.SparseArrayCompat;
@@ -36,10 +37,12 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cn.nuosi.andoroid.testdrawline.FlaotActivity;
 import cn.nuosi.andoroid.testdrawline.R;
+import cn.nuosi.andoroid.testdrawline.dao.Book;
 
 /**
  * Created by Elder on 2017/3/9.
@@ -53,6 +56,10 @@ public class SelectableTextHelper {
 
     private Context mContext;
     private TextView mTextView;
+    /**
+     * 保存该书所有标记的集合
+     */
+    private List<Book> mBookList;
     /**
      * 自定义菜单的布局ID
      */
@@ -110,10 +117,25 @@ public class SelectableTextHelper {
         mCursorHandleColor = builder.mCursorHandleColor;
         mCursorHandleSize = TextLayoutUtil.dp2px(mContext, builder.mCursorHandleSizeInDp);
         menuId = builder.menuId;
+        mBookList = builder.mBookList;
         init();
     }
 
     private void init() {
+        // 初始化保存标记对象的集合
+        clickSpanMap = new SparseArrayCompat<>();
+        // 将数据库中的标记全部载入到当前TextView中
+//        if (mBookList != null) {
+//            for (Book bean : mBookList) {
+//                TextPaint
+//                MyClickableSpan span = new MyClickableSpan() {
+//                    @Override
+//                    public void onClick(View widget) {
+//
+//                    }
+//                }
+//            }
+//        }
         // 由于 TextView 的文本的 BufferType 类型；
         // 是 SPANNABLE 时才可以设置 Span ，实现选中的效果；
         mTextView.setText(mTextView.getText(), TextView.BufferType.SPANNABLE);
@@ -255,6 +277,21 @@ public class SelectableTextHelper {
     }
 
     /**
+     * 自定义画笔调用的方法
+     *
+     * @param paint
+     * @param color
+     * @return
+     */
+    @NonNull
+    private TextPaint getPaint(TextPaint paint, int color) {
+        WeakReference<TextPaint> mTextPaint = new WeakReference<>(paint);
+        mTextPaint.get().setTextSize(mTextView.getTextSize());
+        mTextPaint.get().setColor(color);
+        return mTextPaint.get();
+    }
+
+    /**
      * 显示选中文本时的效果
      *
      * @param x
@@ -331,9 +368,6 @@ public class SelectableTextHelper {
     private void showUnderLine(final TextPaint paint) {
         MyClickableSpan mClickableSpan;
         if (mSpannable != null) {
-            if (clickSpanMap == null) {
-                clickSpanMap = new SparseArrayCompat<>();
-            }
             if (clickSpanMap.get(mSelectionInfo.getStart()) != null) {
                 mClickableSpan = clickSpanMap.get(mTextView.getSelectionStart());
                 Log.e("xns", "map:" + mClickableSpan.toString());
@@ -343,29 +377,8 @@ public class SelectableTextHelper {
                 mClickableSpan = new MyClickableSpan(paint) {
                     @Override
                     public void onClick(View widget) {
-                        // 设置TextView高亮部分背景颜色为透明
-                        mTextView.setHighlightColor(ContextCompat.getColor(mContext,
-                                android.R.color.transparent));
-                        // 将点击部分的信息保存到SelectionInfo中
-                        mSelectionInfo.setStart(mTextView.getSelectionStart());
-                        mSelectionInfo.setEnd(mTextView.getSelectionEnd());
-                        mSelectionInfo.setSelectionContent(mTextView.getText().toString()
-                                .substring(mTextView.getSelectionStart(), mTextView.getSelectionEnd()));
-                        // 弹出菜单
-                        isHide = false;
-                        mOperateWindow.setDel(true);
-                        // 获取该ClickableSpan的坐标
-                        Layout layout = mTextView.getLayout();
-                        int line = layout.getLineForOffset(mTextView.getSelectionStart());
-                        // 得到该字符的X坐标
-                        int offsetX = (int) layout.getPrimaryHorizontal(mTextView.getSelectionStart());
-                        // 得到该字符的矩形区域
-                        Rect rect = new Rect();
-                        layout.getLineBounds(line, rect);
-                        // 得到该字符的Y坐标
-                        int offsetY = rect.top;
-                        DEFAULT_SELECTION_LENGTH = mTextView.getSelectionEnd() - mTextView.getSelectionStart();
-                        showSelectView(offsetX, offsetY);
+                        clickSelectSpan();
+
                     }
                 };
                 Log.e("xns", "mclickable:" + mClickableSpan.toString());
@@ -384,6 +397,35 @@ public class SelectableTextHelper {
             // 将标记信息存入到数据库中
 
         }
+    }
+
+    /**
+     * 点击画线区域时调用的方法
+     */
+    private void clickSelectSpan() {
+        // 设置TextView高亮部分背景颜色为透明
+        mTextView.setHighlightColor(ContextCompat.getColor(mContext,
+                android.R.color.transparent));
+        // 将点击部分的信息保存到SelectionInfo中
+        mSelectionInfo.setStart(mTextView.getSelectionStart());
+        mSelectionInfo.setEnd(mTextView.getSelectionEnd());
+        mSelectionInfo.setSelectionContent(mTextView.getText().toString()
+                .substring(mTextView.getSelectionStart(), mTextView.getSelectionEnd()));
+        // 弹出菜单
+        isHide = false;
+        mOperateWindow.setDel(true);
+        // 获取该ClickableSpan的坐标
+        Layout layout = mTextView.getLayout();
+        int line = layout.getLineForOffset(mTextView.getSelectionStart());
+        // 得到该字符的X坐标
+        int offsetX = (int) layout.getPrimaryHorizontal(mTextView.getSelectionStart());
+        // 得到该字符的矩形区域
+        Rect rect = new Rect();
+        layout.getLineBounds(line, rect);
+        // 得到该字符的Y坐标
+        int offsetY = rect.top;
+        DEFAULT_SELECTION_LENGTH = mTextView.getSelectionEnd() - mTextView.getSelectionStart();
+        showSelectView(offsetX, offsetY);
     }
 
     /**
@@ -448,6 +490,7 @@ public class SelectableTextHelper {
         private int mSelectedColor = 0xFFAFE1F4;
         private float mCursorHandleSizeInDp = 24;
         private int menuId;
+        private List<Book> mBookList;
 
         public Builder(TextView textView) {
             mTextView = textView;
@@ -470,6 +513,11 @@ public class SelectableTextHelper {
 
         public Builder setPopMenu(int layoutId) {
             menuId = layoutId;
+            return this;
+        }
+
+        public Builder setBookList(List<Book> mList) {
+            mBookList = mList;
             return this;
         }
 
@@ -544,11 +592,9 @@ public class SelectableTextHelper {
                 public void onClick(View v) {
                     hideSelectView();
                     resetSelectionInfo();
-                    WeakReference<TextPaint> mTextPaint = new WeakReference<>(new TextPaint(
-                            new Paint(Paint.ANTI_ALIAS_FLAG)));
-                    mTextPaint.get().setTextSize(mTextView.getTextSize());
-                    mTextPaint.get().setColor(Color.RED);
-                    showUnderLine(mTextPaint.get());
+                    TextPaint mTextPaint = getPaint(new TextPaint(
+                            new Paint(Paint.ANTI_ALIAS_FLAG)), Color.RED);
+                    showUnderLine(mTextPaint);
                 }
             });
             // 设置蓝色下划线
@@ -557,11 +603,9 @@ public class SelectableTextHelper {
                 public void onClick(View v) {
                     hideSelectView();
                     resetSelectionInfo();
-                    WeakReference<TextPaint> mTextPaint = new WeakReference<>(new TextPaint(
-                            mTextView.getPaint()));
-                    mTextPaint.get().setTextSize(mTextView.getTextSize());
-                    mTextPaint.get().setColor(Color.BLUE);
-                    showUnderLine(mTextPaint.get());
+                    TextPaint mTextPaint = getPaint(new TextPaint(
+                            new Paint(Paint.ANTI_ALIAS_FLAG)), Color.BLUE);
+                    showUnderLine(mTextPaint);
                 }
             });
             // 删除下划线逻辑部分

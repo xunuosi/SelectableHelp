@@ -8,44 +8,18 @@ import android.os.Parcelable;
  * 记录选择文本信息的实体类
  */
 
-public class SelectionInfo implements Parcelable{
+public class SelectionInfo {
 
     private int mStart;
     private int mEnd;
     private String mSelectionContent;
+    private String mNoteContent;
+    private int mColor;
 
     public SelectionInfo() {
     }
 
-    protected SelectionInfo(Parcel in) {
-        mStart = in.readInt();
-        mEnd = in.readInt();
-        mSelectionContent = in.readString();
-    }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(mStart);
-        dest.writeInt(mEnd);
-        dest.writeString(mSelectionContent);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    public static final Creator<SelectionInfo> CREATOR = new Creator<SelectionInfo>() {
-        @Override
-        public SelectionInfo createFromParcel(Parcel in) {
-            return new SelectionInfo(in);
-        }
-
-        @Override
-        public SelectionInfo[] newArray(int size) {
-            return new SelectionInfo[size];
-        }
-    };
 
     public int getStart() {
         return mStart;
@@ -69,6 +43,22 @@ public class SelectionInfo implements Parcelable{
 
     public void setSelectionContent(String selectionContent) {
         mSelectionContent = selectionContent;
+    }
+
+    public String getNoteContent() {
+        return mNoteContent;
+    }
+
+    public void setNoteContent(String noteContent) {
+        mNoteContent = noteContent;
+    }
+
+    public int getColor() {
+        return mColor;
+    }
+
+    public void setColor(int color) {
+        mColor = color;
     }
 
     @Override
