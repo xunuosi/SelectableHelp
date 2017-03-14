@@ -381,6 +381,8 @@ public class SelectableTextHelper {
             mTextView.setMovementMethod(LinkMovementMethod.getInstance());
 //            }
             mTextView.setText(mSpannable);
+            // 将标记信息存入到数据库中
+
         }
     }
 

@@ -3,18 +3,21 @@ package cn.nuosi.andoroid.testdrawline;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatDelegate;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cn.nuosi.andoroid.testdrawline.SelectableTextView.OnSelectListener;
 import cn.nuosi.andoroid.testdrawline.SelectableTextView.SelectableTextHelper;
+import cn.nuosi.andoroid.testdrawline.dao.Book;
+import cn.nuosi.andoroid.testdrawline.greendao.gen.BookDao;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,11 +64,16 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private List<Book> mBookList = new ArrayList<>();
+    private BookDao mBookDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // 初始化数据库读取笔记信息
+        initData();
+
         mTextView = (TextView) findViewById(R.id.test_view);
 
 //        setActionMode();
@@ -86,6 +94,14 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+    }
+
+    private void initData() {
+        mBookDao = GreenDaoManager.getInstance().getSession().getBookDao();
+        mBookList = GreenDaoManager.getInstance().getSession()
+                .getBookDao().queryBuilder().build().list();
+        Log.e("xns", "mBookList:" + mBookList.toString());
 
     }
 

@@ -10,43 +10,44 @@ import org.greenrobot.greendao.annotation.Generated;
  * Created by Elder on 2017/3/14.
  * 每本书的实体类
  */
-@Entity(indexes = {
-    @Index(value = "id, id DESC", unique = true)})
+@Entity
 public class Book {
-    @Id
-    private int id;
+    @Index
+    @Id(autoincrement = true)
+    private long id;
 
     private String name;
 
     @NotNull
     private int start;
     private int end;
+    private int color;
 
     private String content;
     private String note;
+    
+    public Book() {
+    }
 
 
-    @Generated(hash = 1899122326)
-    public Book(int id, String name, int start, int end, String content,
+    @Generated(hash = 1314692629)
+    public Book(long id, String name, int start, int end, int color, String content,
             String note) {
         this.id = id;
         this.name = name;
         this.start = start;
         this.end = end;
+        this.color = color;
         this.content = content;
         this.note = note;
     }
 
-    @Generated(hash = 1839243756)
-    public Book() {
-    }
 
-
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -88,5 +89,13 @@ public class Book {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 }

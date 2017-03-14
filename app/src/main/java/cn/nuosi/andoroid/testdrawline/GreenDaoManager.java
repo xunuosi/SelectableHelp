@@ -1,5 +1,7 @@
 package cn.nuosi.andoroid.testdrawline;
 
+import org.greenrobot.greendao.database.Database;
+
 import cn.nuosi.andoroid.testdrawline.greendao.gen.DaoMaster;
 import cn.nuosi.andoroid.testdrawline.greendao.gen.DaoSession;
 
@@ -15,7 +17,7 @@ public class GreenDaoManager {
     private DaoSession mDaoSession;
 
     private GreenDaoManager() {
-        DaoMaster.DevOpenHelper devOpenHelper = new DaoMaster.DevOpenHelper(DrawLineApplication.getContext(),                "users-db", null);
+        DaoMaster.DevOpenHelper devOpenHelper = new DaoMaster.DevOpenHelper(DrawLineApplication.getContext(),"book.db", null);
         mDaoMaster = new DaoMaster(devOpenHelper.getWritableDatabase());
         mDaoSession = mDaoMaster.newSession();
     }
