@@ -648,11 +648,11 @@ public class SelectableTextHelper {
             contentView.findViewById(R.id.tv_note).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // 直接选择记笔记时默认选择红色标注
+                    // 直接选择记笔记时默认设置划线
                     hideSelectView();
                     resetSelectionInfo();
                     TextPaint mTextPaint = getPaint(new TextPaint(
-                            new Paint(Paint.ANTI_ALIAS_FLAG)), Color.RED);
+                            new Paint(Paint.ANTI_ALIAS_FLAG)), mSelectionInfo.getColor());
                     showUnderLine(mTextPaint);
                     // 跳转完成记笔记的功能
                     Intent intent = new Intent(mContext, FlaotActivity.class);
