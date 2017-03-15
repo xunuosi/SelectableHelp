@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import cn.nuosi.andoroid.testdrawline.dao.Book;
+
 /**
  * 浮动的Activity
  */
@@ -15,6 +17,7 @@ public class FlaotActivity extends AppCompatActivity {
 
     private TextView mTextView;
     private EditText mEditText;
+    private Book mBook;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -26,8 +29,8 @@ public class FlaotActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         if (intent != null) {
-            String content = intent.getStringExtra("content");
-            mTextView.setText(content);
+            mBook = intent.getParcelableExtra("book");
+            mTextView.setText(mBook.getContent());
         }
     }
 }
