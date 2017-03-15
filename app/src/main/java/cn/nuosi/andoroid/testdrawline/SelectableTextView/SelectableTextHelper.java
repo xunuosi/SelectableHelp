@@ -19,7 +19,6 @@ import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.BackgroundColorSpan;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -102,9 +101,9 @@ public class SelectableTextHelper {
     /**
      * 滑动状态改变时的监听器
      */
-    ViewTreeObserver.OnScrollChangedListener mOnScrollChangedListener;
+    private ViewTreeObserver.OnScrollChangedListener mOnScrollChangedListener;
 
-    public SelectableTextHelper(Builder builder) {
+    private SelectableTextHelper(Builder builder) {
         mTextView = builder.mTextView;
         mContext = mTextView.getContext();
         mSelectedColor = builder.mSelectedColor;
@@ -220,7 +219,7 @@ public class SelectableTextHelper {
     /**
      * 延迟显示的方法
      *
-     * @param duration
+     * @param duration:设置延迟的时间
      */
     private void postShowSelectView(int duration) {
         mTextView.removeCallbacks(mShowSelectViewRunnable);
@@ -270,7 +269,6 @@ public class SelectableTextHelper {
      * 重置选择状态
      */
     private void resetSelectionInfo() {
-//        mSelectionInfo.setSelectionContent(null);
         if (mSpannable != null && mBgSpan != null) {
             // 移除背景色
             mSpannable.removeSpan(mBgSpan);
@@ -281,9 +279,9 @@ public class SelectableTextHelper {
     /**
      * 自定义画笔调用的方法
      *
-     * @param paint
-     * @param color
-     * @return
+     * @param paint:传入定义好的画笔对象
+     * @param color：画笔颜色
+     * @return 返回定义好的TextPaint对象
      */
     @NonNull
     private TextPaint getPaint(TextPaint paint, int color) {
@@ -296,8 +294,8 @@ public class SelectableTextHelper {
     /**
      * 显示选中文本时的效果
      *
-     * @param x
-     * @param y
+     * @param x:触碰屏幕时的X坐标
+     * @param y:触碰屏幕时的Y坐标
      */
     private void showSelectView(int x, int y) {
         // 重置上一次选中的状态
@@ -329,8 +327,8 @@ public class SelectableTextHelper {
     /**
      * 选中文本的方法
      *
-     * @param startPos
-     * @param endPos
+     * @param startPos:选择文本时的首字索引值
+     * @param endPos:选择文本时的尾字索引值
      */
     private void selectText(int startPos, int endPos) {
         if (startPos != -1) {
@@ -421,8 +419,8 @@ public class SelectableTextHelper {
 
     /**
      * 给定首字符的索引值返回指定的标注对象
-     * @param index
-     * @return
+     * @param index:给定查找时的首字索引值
+     * @return  返回指定的查找对象
      */
     private Book getBook(int index) {
         for (Book bean : mBookList) {
@@ -436,7 +434,7 @@ public class SelectableTextHelper {
     /**
      * 将标记信息存储到数据库中的方法
      *
-     * @param info
+     * @param info:当前需要保持的SelectionInfo对象
      */
     private void saveNote(SelectionInfo info) {
         BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
@@ -510,7 +508,7 @@ public class SelectableTextHelper {
     /**
      * 显示游标的方法
      *
-     * @param cursorHandle
+     * @param cursorHandle:需要显示的游标对象
      */
     private void showCursorHandle(CursorHandle cursorHandle) {
         Layout layout = mTextView.getLayout();
@@ -522,7 +520,7 @@ public class SelectableTextHelper {
     /**
      * 设置外部调用的监听接口
      *
-     * @param selectListener
+     * @param selectListener:供外部传入的监听接口对象
      */
     public void setSelectListener(OnSelectListener selectListener) {
         mSelectListener = selectListener;
@@ -604,7 +602,7 @@ public class SelectableTextHelper {
         private int mWidth;
         private int mHeight;
 
-        public OperateWindow(final Context context, final int menuId) {
+        private OperateWindow(final Context context, final int menuId) {
             // 解析弹出的菜单
             final View contentView = LayoutInflater.from(context).inflate(menuId, null);
             contentView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
@@ -651,10 +649,12 @@ public class SelectableTextHelper {
                     hideSelectView();
                     resetSelectionInfo();
                     Book book = getBook(mSelectionInfo.getStart());
-                    TextPaint mTextPaint = getPaint(new TextPaint(
-                            new Paint(Paint.ANTI_ALIAS_FLAG)),
-                            book.getColor() == 0 ? Color.RED : book.getColor());
-                    showUnderLine(mTextPaint);
+                    if (book != null) {
+                        TextPaint mTextPaint = getPaint(new TextPaint(
+                                        new Paint(Paint.ANTI_ALIAS_FLAG)),
+                                book.getColor() == 0 ? Color.RED : book.getColor());
+                        showUnderLine(mTextPaint);
+                    }
                     // 跳转完成记笔记的功能
                     Intent intent = new Intent(mContext, FlaotActivity.class);
 //                    intent.putExtra("content", mSelectionInfo.getSelectionContent());
@@ -722,7 +722,7 @@ public class SelectableTextHelper {
             mWindow.showAtLocation(mTextView, Gravity.NO_GRAVITY, posX, posY);
         }
 
-        public void dismiss() {
+        private void dismiss() {
             mWindow.dismiss();
         }
 
@@ -733,9 +733,9 @@ public class SelectableTextHelper {
         /**
          * 设置弹窗菜单是否能够使用删除按钮
          *
-         * @param del
+         * @param del:是否显示删除按钮的Boolean值变量
          */
-        public void setDel(boolean del) {
+        private void setDel(boolean del) {
             mDelTv.setEnabled(del);
         }
     }
@@ -822,8 +822,8 @@ public class SelectableTextHelper {
         /**
          * 随着触摸移动不断更新选中状态
          *
-         * @param x
-         * @param y
+         * @param x:移动手指时的X坐标
+         * @param y:移动手指时的Y坐标
          */
         private void update(int x, int y) {
             mTextView.getLocationInWindow(mLocation);
@@ -891,8 +891,8 @@ public class SelectableTextHelper {
         /**
          * 显示游标时调用的方法
          *
-         * @param x
-         * @param y
+         * @param x:移动手指时的X坐标
+         * @param y:移动手指时的Y坐标
          */
         public void show(int x, int y) {
             mTextView.getLocationInWindow(mLocation);
@@ -919,8 +919,8 @@ public class SelectableTextHelper {
         /**
          * 返回游标类型
          *
-         * @param isLeft
-         * @return
+         * @param isLeft:判断是否为起始游标
+         * @return  返回指定的游标对象
          */
         private CursorHandle getCursorHandle(boolean isLeft) {
             if (mStartHandle.isLeft == isLeft) {
