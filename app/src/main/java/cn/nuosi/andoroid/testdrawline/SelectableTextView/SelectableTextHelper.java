@@ -19,6 +19,7 @@ import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.BackgroundColorSpan;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -649,15 +650,16 @@ public class SelectableTextHelper {
                     hideSelectView();
                     resetSelectionInfo();
                     Book book = getBook(mSelectionInfo.getStart());
-                    if (book != null) {
-                        TextPaint mTextPaint = getPaint(new TextPaint(
-                                        new Paint(Paint.ANTI_ALIAS_FLAG)),
-                                book.getColor() == 0 ? Color.RED : book.getColor());
-                        showUnderLine(mTextPaint);
+                    if (book == null) {
+                        saveNote(mSelectionInfo);
+                        book = getBook(mSelectionInfo.getStart());
                     }
+                    TextPaint mTextPaint = getPaint(new TextPaint(
+                                    new Paint(Paint.ANTI_ALIAS_FLAG)),
+                            book.getColor() == 0 ? Color.RED : book.getColor());
+                    showUnderLine(mTextPaint);
                     // 跳转完成记笔记的功能
                     Intent intent = new Intent(mContext, FlaotActivity.class);
-//                    intent.putExtra("content", mSelectionInfo.getSelectionContent());
                     intent.putExtra("book", book);
                     mContext.startActivity(intent);
                 }
