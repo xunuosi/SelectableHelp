@@ -1,5 +1,8 @@
 package cn.nuosi.andoroid.testdrawline.dao;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Index;
@@ -11,7 +14,7 @@ import org.greenrobot.greendao.annotation.Generated;
  * 每本书的实体类
  */
 @Entity
-public class Book {
+public class Book implements Parcelable {
     @Index
     @Id(autoincrement = true)
     private Long id;
@@ -41,6 +44,42 @@ public class Book {
         this.content = content;
         this.note = note;
     }
+
+    protected Book(Parcel in) {
+        name = in.readString();
+        start = in.readInt();
+        end = in.readInt();
+        color = in.readInt();
+        content = in.readString();
+        note = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeInt(start);
+        dest.writeInt(end);
+        dest.writeInt(color);
+        dest.writeString(content);
+        dest.writeString(note);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Book> CREATOR = new Creator<Book>() {
+        @Override
+        public Book createFromParcel(Parcel in) {
+            return new Book(in);
+        }
+
+        @Override
+        public Book[] newArray(int size) {
+            return new Book[size];
+        }
+    };
 
     public String getName() {
         return name;

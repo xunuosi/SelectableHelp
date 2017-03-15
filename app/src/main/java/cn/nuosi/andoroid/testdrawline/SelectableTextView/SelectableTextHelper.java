@@ -12,20 +12,14 @@ import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.ColorUtils;
 import android.support.v4.util.SparseArrayCompat;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
-import android.text.method.MovementMethod;
 import android.text.style.BackgroundColorSpan;
-import android.text.style.ClickableSpan;
-import android.text.style.LineBackgroundSpan;
-import android.text.style.UnderlineSpan;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -34,19 +28,15 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import cn.nuosi.andoroid.testdrawline.FlaotActivity;
 import cn.nuosi.andoroid.testdrawline.GreenDaoManager;
 import cn.nuosi.andoroid.testdrawline.R;
 import cn.nuosi.andoroid.testdrawline.dao.Book;
 import cn.nuosi.andoroid.testdrawline.greendao.gen.BookDao;
-import cn.nuosi.andoroid.testdrawline.greendao.gen.DaoSession;
 
 /**
  * Created by Elder on 2017/3/9.
@@ -131,7 +121,6 @@ public class SelectableTextHelper {
         mTextView.setText(mTextView.getText(), TextView.BufferType.SPANNABLE);
         // 初始化保存标记对象的集合
         clickSpanMap = new SparseArrayCompat<>();
-        Log.e("xns", "mBookList:" + mBookList.toString());
         // 将数据库中的标记全部载入到当前TextView中
         if (mBookList != null) {
             Spannable mSpan = null;
@@ -428,7 +417,6 @@ public class SelectableTextHelper {
         dao.insert(book);
         // 存放在内存的集合中
         mBookList.add(book);
-        Log.e("xns", "bookList.add()" + mBookList.toString());
     }
 
 
@@ -492,7 +480,6 @@ public class SelectableTextHelper {
             mBookList.remove(mDelBook);
             dao.delete(mDelBook);
         }
-        Log.e("xns", "bookList.add()" + mBookList.toString());
     }
 
     /**
