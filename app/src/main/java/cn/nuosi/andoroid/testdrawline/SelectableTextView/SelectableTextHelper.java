@@ -133,7 +133,7 @@ public class SelectableTextHelper {
                 MyClickableSpan clickSpan = new MyClickableSpan(textPaint) {
                     @Override
                     public void onClick(View widget) {
-                        clickSelectSpan(bean.getStart(),bean.getEnd());
+                        clickSelectSpan(bean.getStart(), bean.getEnd());
                     }
                 };
                 clickSpanMap.append(bean.getStart(), clickSpan);
@@ -408,12 +408,7 @@ public class SelectableTextHelper {
     private void updateNote() {
         BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
         int index = mTextView.getSelectionStart();
-        Book mDelBook = null;
-        for (Book bean : mBookList) {
-            if (bean.getStart() == index) {
-                mDelBook = bean;
-            }
-        }
+        Book mDelBook = getBook(index);
         if (mDelBook != null) {
             // 删除原来颜色的标注对象
             mBookList.remove(mDelBook);
@@ -423,6 +418,20 @@ public class SelectableTextHelper {
             // 更新数据库中的信息
             dao.update(mDelBook);
         }
+    }
+
+    /**
+     * 给定首字符的索引值返回指定的标注对象
+     * @param index
+     * @return
+     */
+    private Book getBook(int index) {
+        for (Book bean : mBookList) {
+            if (bean.getStart() == index) {
+                return bean;
+            }
+        }
+        return null;
     }
 
     /**
@@ -444,17 +453,11 @@ public class SelectableTextHelper {
 
     /**
      * 删除数据库中数据的方法
-     *
      */
     private void delNote() {
         BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
         int index = mSelectionInfo.getStart();
-        Book mDelBook = null;
-        for (Book bean : mBookList) {
-            if (bean.getStart() == index) {
-                mDelBook = bean;
-            }
-        }
+        Book mDelBook = getBook(index);
         if (mDelBook != null) {
             mBookList.remove(mDelBook);
             dao.delete(mDelBook);
