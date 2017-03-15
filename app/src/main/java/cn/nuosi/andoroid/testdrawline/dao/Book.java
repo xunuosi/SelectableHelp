@@ -136,4 +136,17 @@ public class Book implements Parcelable {
     public void setId(Long id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", start=" + start +
+                ", end=" + end +
+                ", color=" + color +
+                ", content='" + content + '\'' +
+                ", note='" + note + '\'' +
+                '}';
+    }
 }

@@ -371,12 +371,13 @@ public class SelectableTextHelper {
     private void showUnderLine(final TextPaint paint) {
         // 将划线颜色信息保存到SelectionInfo中
         mSelectionInfo.setColor(paint.getColor());
-
         MyClickableSpan mClickableSpan;
         if (mSpannable != null) {
             if (clickSpanMap.get(mSelectionInfo.getStart()) != null) {
                 mClickableSpan = clickSpanMap.get(mTextView.getSelectionStart());
                 mClickableSpan.setTextPaint(paint);
+                // 更新标记的方法
+                updateNote();
             } else {
                 mClickableSpan = new MyClickableSpan(paint) {
                     @Override
@@ -398,7 +399,29 @@ public class SelectableTextHelper {
             mTextView.setMovementMethod(LinkMovementMethod.getInstance());
             // Refresh
             mTextView.setText(mSpannable);
-            // 将
+        }
+    }
+
+    /**
+     * 更新标记信息的方法
+     */
+    private void updateNote() {
+        BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
+        int index = mTextView.getSelectionStart();
+        Book mDelBook = null;
+        for (Book bean : mBookList) {
+            if (bean.getStart() == index) {
+                mDelBook = bean;
+            }
+        }
+        if (mDelBook != null) {
+            // 删除原来颜色的标注对象
+            mBookList.remove(mDelBook);
+            // 将更新后的实体类对象存入集合中
+            mDelBook.setColor(mSelectionInfo.getColor());
+            mBookList.add(mDelBook);
+            // 更新数据库中的信息
+            dao.update(mDelBook);
         }
     }
 
@@ -417,6 +440,25 @@ public class SelectableTextHelper {
         dao.insert(book);
         // 存放在内存的集合中
         mBookList.add(book);
+    }
+
+    /**
+     * 删除数据库中数据的方法
+     *
+     */
+    private void delNote() {
+        BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
+        int index = mSelectionInfo.getStart();
+        Book mDelBook = null;
+        for (Book bean : mBookList) {
+            if (bean.getStart() == index) {
+                mDelBook = bean;
+            }
+        }
+        if (mDelBook != null) {
+            mBookList.remove(mDelBook);
+            dao.delete(mDelBook);
+        }
     }
 
 
@@ -461,25 +503,6 @@ public class SelectableTextHelper {
         mTextView.setText(mSpannable);
         // 从数据库中删除数据
         delNote();
-    }
-
-    /**
-     * 删除数据库中数据的方法
-     *
-     */
-    private void delNote() {
-        BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
-        int index = mSelectionInfo.getStart();
-        Book mDelBook = null;
-        for (Book bean : mBookList) {
-            if (bean.getStart() == index) {
-                mDelBook = bean;
-            }
-        }
-        if (mDelBook != null) {
-            mBookList.remove(mDelBook);
-            dao.delete(mDelBook);
-        }
     }
 
     /**
