@@ -480,17 +480,19 @@ public class SelectableTextHelper {
      *
      */
     private void delNote() {
-//        BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
-//        Book book = new Book();
-//        SelectionInfo info = clicSpan.getInfo();
-//        Log.e("xns", "info:" + info);
-//        if (info != null) {
-//            book.setColor(info.getColor());
-//            book.setStart(info.getStart());
-//            book.setEnd(info.getEnd());
-//            book.setContent(info.getSelectionContent());
-//            dao.delete(book);
-//        }
+        BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
+        int index = mSelectionInfo.getStart();
+        Book mDelBook = null;
+        for (Book bean : mBookList) {
+            if (bean.getStart() == index) {
+                mDelBook = bean;
+            }
+        }
+        if (mDelBook != null) {
+            mBookList.remove(mDelBook);
+            dao.delete(mDelBook);
+        }
+        Log.e("xns", "bookList.add()" + mBookList.toString());
     }
 
     /**
