@@ -51,9 +51,11 @@ public class FlaotActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String note = mEditText.getText().toString();
                 mBookDao = GreenDaoManager.getInstance().getSession().getBookDao();
-                QueryBuilder<Book> queryBuilder = mBookDao.queryBuilder();
-                Book book = queryBuilder.where(BookDao.Properties.Start.eq(mBook.getStart())).unique();
-                mBook = book;
+                if (mBook.getId() == null) {
+                    QueryBuilder<Book> queryBuilder = mBookDao.queryBuilder();
+                    Book book = queryBuilder.where(BookDao.Properties.Start.eq(mBook.getStart())).unique();
+                    mBook = book;
+                }
                 mBook.setNote(note);
                 mBookDao.update(mBook);
                 // 跳转到主界面
