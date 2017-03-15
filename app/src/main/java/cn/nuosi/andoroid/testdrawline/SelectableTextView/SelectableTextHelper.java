@@ -123,9 +123,8 @@ public class SelectableTextHelper {
         clickSpanMap = new SparseArrayCompat<>();
         // 将数据库中的标记全部载入到当前TextView中
         if (mBookList != null) {
-            Spannable mSpan = null;
             if (mTextView.getText() instanceof Spannable) {
-                mSpan = (Spannable) mTextView.getText();
+                mSpannable = (Spannable) mTextView.getText();
             }
             for (final Book bean : mBookList) {
                 TextPaint textPaint = getPaint(new TextPaint(
@@ -137,8 +136,8 @@ public class SelectableTextHelper {
                     }
                 };
                 clickSpanMap.append(bean.getStart(), clickSpan);
-                mSpan.setSpan(clickSpan, bean.getStart(), bean.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                mTextView.setText(mSpan);
+                mSpannable.setSpan(clickSpan, bean.getStart(), bean.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                mTextView.setText(mSpannable);
             }
             mTextView.setMovementMethod(LinkMovementMethod.getInstance());
         }
@@ -651,14 +650,15 @@ public class SelectableTextHelper {
                     // 直接选择记笔记时默认设置划线
                     hideSelectView();
                     resetSelectionInfo();
+                    Book book = getBook(mSelectionInfo.getStart());
                     TextPaint mTextPaint = getPaint(new TextPaint(
                             new Paint(Paint.ANTI_ALIAS_FLAG)),
-                            mSelectionInfo.getColor() == 0 ? Color.RED : mSelectionInfo.getColor());
+                            book.getColor() == 0 ? Color.RED : book.getColor());
                     showUnderLine(mTextPaint);
                     // 跳转完成记笔记的功能
                     Intent intent = new Intent(mContext, FlaotActivity.class);
 //                    intent.putExtra("content", mSelectionInfo.getSelectionContent());
-                    intent.putExtra("book", getBook(mSelectionInfo.getStart()));
+                    intent.putExtra("book", book);
                     mContext.startActivity(intent);
                 }
             });
