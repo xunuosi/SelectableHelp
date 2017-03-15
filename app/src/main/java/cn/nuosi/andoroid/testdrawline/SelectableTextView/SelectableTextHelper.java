@@ -409,6 +409,7 @@ public class SelectableTextHelper {
             mTextView.setMovementMethod(LinkMovementMethod.getInstance());
             // Refresh
             mTextView.setText(mSpannable);
+            // 将
         }
     }
 
@@ -425,6 +426,9 @@ public class SelectableTextHelper {
         book.setEnd(info.getEnd());
         book.setContent(info.getSelectionContent());
         dao.insert(book);
+        // 存放在内存的集合中
+        mBookList.add(book);
+        Log.e("xns", "bookList.add()" + mBookList.toString());
     }
 
 
@@ -468,25 +472,25 @@ public class SelectableTextHelper {
         clickSpanMap.delete(mTextView.getSelectionStart());
         mTextView.setText(mSpannable);
         // 从数据库中删除数据
-        delNote(mClickableSpan);
+        delNote();
     }
 
     /**
      * 删除数据库中数据的方法
-     * @param clicSpan
+     *
      */
-    private void delNote(MyClickableSpan clicSpan) {
-        BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
-        Book book = new Book();
-        SelectionInfo info = clicSpan.getInfo();
-        Log.e("xns", "info:" + info);
-        if (info != null) {
-            book.setColor(info.getColor());
-            book.setStart(info.getStart());
-            book.setEnd(info.getEnd());
-            book.setContent(info.getSelectionContent());
-            dao.delete(book);
-        }
+    private void delNote() {
+//        BookDao dao = GreenDaoManager.getInstance().getSession().getBookDao();
+//        Book book = new Book();
+//        SelectionInfo info = clicSpan.getInfo();
+//        Log.e("xns", "info:" + info);
+//        if (info != null) {
+//            book.setColor(info.getColor());
+//            book.setStart(info.getStart());
+//            book.setEnd(info.getEnd());
+//            book.setContent(info.getSelectionContent());
+//            dao.delete(book);
+//        }
     }
 
     /**
