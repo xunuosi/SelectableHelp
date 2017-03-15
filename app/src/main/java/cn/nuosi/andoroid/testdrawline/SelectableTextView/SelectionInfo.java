@@ -67,6 +67,8 @@ public class SelectionInfo {
                 "mStart=" + mStart +
                 ", mEnd=" + mEnd +
                 ", mSelectionContent='" + mSelectionContent + '\'' +
+                ", mNoteContent='" + mNoteContent + '\'' +
+                ", mColor=" + mColor +
                 '}';
     }
 }

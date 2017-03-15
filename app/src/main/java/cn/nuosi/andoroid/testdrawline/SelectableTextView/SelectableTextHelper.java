@@ -271,7 +271,7 @@ public class SelectableTextHelper {
      * 重置选择状态
      */
     private void resetSelectionInfo() {
-        mSelectionInfo.setSelectionContent(null);
+//        mSelectionInfo.setSelectionContent(null);
         if (mSpannable != null && mBgSpan != null) {
             // 移除背景色
             mSpannable.removeSpan(mBgSpan);
@@ -644,13 +644,20 @@ public class SelectableTextHelper {
                     mOperateWindow.show();
                 }
             });
-            // 设置下划线
+            // 设置笔记
             contentView.findViewById(R.id.tv_note).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // 直接选择记笔记时默认选择红色标注
+                    hideSelectView();
+                    resetSelectionInfo();
+                    TextPaint mTextPaint = getPaint(new TextPaint(
+                            new Paint(Paint.ANTI_ALIAS_FLAG)), Color.RED);
+                    showUnderLine(mTextPaint);
                     // 跳转完成记笔记的功能
                     Intent intent = new Intent(mContext, FlaotActivity.class);
-                    intent.putExtra("content", mSelectionInfo.getSelectionContent());
+//                    intent.putExtra("content", mSelectionInfo.getSelectionContent());
+                    intent.putExtra("book", getBook(mSelectionInfo.getStart()));
                     mContext.startActivity(intent);
                 }
             });
