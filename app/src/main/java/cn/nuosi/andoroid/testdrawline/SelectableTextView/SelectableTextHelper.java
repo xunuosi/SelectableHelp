@@ -652,7 +652,8 @@ public class SelectableTextHelper {
                     hideSelectView();
                     resetSelectionInfo();
                     TextPaint mTextPaint = getPaint(new TextPaint(
-                            new Paint(Paint.ANTI_ALIAS_FLAG)), mSelectionInfo.getColor());
+                            new Paint(Paint.ANTI_ALIAS_FLAG)),
+                            mSelectionInfo.getColor() == 0 ? Color.RED : mSelectionInfo.getColor());
                     showUnderLine(mTextPaint);
                     // 跳转完成记笔记的功能
                     Intent intent = new Intent(mContext, FlaotActivity.class);
